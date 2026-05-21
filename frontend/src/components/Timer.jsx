@@ -1,4 +1,4 @@
-import board from "../assets/ui/ChatGPT_Image_May_20__2026__05_04_56_PM-removebg-preview.png"
+import board from "../assets/ui/board.png"
 import image0 from "../assets/ui/numbers/0-removebg-preview.png"
 import image1 from "../assets/ui/numbers/1-removebg-preview.png"
 import image2 from "../assets/ui/numbers/2-removebg-preview.png"
