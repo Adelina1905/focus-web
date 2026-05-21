@@ -9,9 +9,11 @@ import TimeUp from './components/TimeUp';
 import { useState, useEffect } from 'react';
 
 function App() {
-  let timer = 1500;
+  let timer = 1500;  //variable for working session
+  let breakTimer = 300; //variable for break session
   const [time, setTime] = useState(timer);
-  const [mode, setMode] = useState("idle")
+  const [mode, setMode] = useState("idle");
+  const [lastSession, setLastSession] = useState(null);
   useEffect(() => {
     if (mode === "idle" || mode === "paused") return;
 
@@ -22,8 +24,10 @@ function App() {
 
           if (mode === "work") {
             setMode("idle");
+            setLastSession("work");
           } else if (mode === "break") {
             setMode("idle");
+            setLastSession("break");
           }
           return 0;
         }
@@ -53,7 +57,7 @@ function App() {
   }
   const handleBreak = () => {
     setMode("break")
-    setTime(300);
+    setTime(breakTimer);
   }
   return (
     <>
@@ -78,6 +82,9 @@ function App() {
         {mode === "idle" && time === 0 && (
           <div className="absolute inset-0 pt-8">
             <TimeUp
+              mode={mode}
+              lastSession={lastSession}
+              handlePlay={handlePlay}
               handleBreak={handleBreak}
               handleReset={handleReset} />
           </div>
