@@ -7,6 +7,7 @@ import Timer from './components/Timer';
 import MusicBtn from './components/MusicBtn';
 import TimeUp from './components/TimeUp';
 import { useState, useEffect } from 'react';
+import Sessions from './components/Sessions';
 
 function App() {
   let timer = 1500;  //variable for working session
@@ -14,31 +15,24 @@ function App() {
   const [time, setTime] = useState(timer);
   const [mode, setMode] = useState("idle");
   const [lastSession, setLastSession] = useState(null);
-  useEffect(() => {
-    if (mode === "idle" || mode === "paused") return;
 
-    const interval = setInterval(() => {
-      setTime(prev => {
-        if (prev <= 0) {
-          clearInterval(interval);
+  const [workingSession, setWorkingSession] = useState(80);
+  const display = {
+    hours : Math.floor(workingSession/3600),
+    minutes: Math.floor((workingSession % 3600)/60) 
+  }
 
-          if (mode === "work") {
-            setMode("idle");
-            setLastSession("work");
-          } else if (mode === "break") {
-            setMode("idle");
-            setLastSession("break");
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000)
+  const handleSessionEnd = () => {
+    if (mode === "work") {
+      setLastSession("work");
+      setWorkingSession(prev => prev + timer)
+    } else if (mode === "break") {
+      setLastSession("break");
+      setWorkingSession(prev => prev + breakTimer)
+    }
+      setMode("idle");
 
-    return () => clearInterval(interval);
-
-  }, [mode])
-
+  }
   const handlePlay = () => {
     if (mode === "paused") {
       setMode("work");
@@ -59,6 +53,24 @@ function App() {
     setMode("break")
     setTime(breakTimer);
   }
+
+  useEffect(() => {
+    if (mode === "idle" || mode === "paused") return;
+
+    const interval = setInterval(() => {
+      setTime(prev => {
+        if (prev <= 0) {
+          clearInterval(interval);
+          handleSessionEnd();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000)
+
+    return () => clearInterval(interval);
+
+  }, [mode])
   return (
     <>
       <div className="relative">
@@ -78,7 +90,10 @@ function App() {
             <ResetBtn onReset={handleReset} />
           </div>
         </div>
-
+        <div className="absolute top-0 right-0">
+          <Sessions
+            display={display} />
+        </div>
         {mode === "idle" && time === 0 && (
           <div className="absolute inset-0 pt-8">
             <TimeUp
