@@ -1,7 +1,9 @@
 const STORAGE_KEY = "focus-app:data:v1";
 
 const defaultData = {
-  workingSession: 0
+  workingSession: 0,
+    breakSession: 0
+
 };
 
 export function loadFocusData() {

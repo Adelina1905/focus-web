@@ -18,67 +18,105 @@ function App() {
   const [time, setTime] = useState(timer);
   const [mode, setMode] = useState("idle");
   const [lastSession, setLastSession] = useState(null);
-
+  const [now, setNow] = useState(() => Date.now());
   //local Storage
   const [appData, setAppData] = useState(() => loadFocusData());
-  
+  const [sessionStartAt, setSessionStartAt] = useState(null);
+  const hasEndedRef = useRef(false);
+
   useEffect(() => {
     saveFocusData(appData);
   }, [appData]);
 
+  useEffect(() => {
+    if (mode !== "work" && mode !== "break") return;
 
-  const workingSession = appData.workingSession ?? 0;
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
 
-  const sessionStartRef = useRef(null);
-  const hasEndedRef = useRef(false);
+    return () => clearInterval(interval);
+  }, [mode]);
+
+  const savedWorkingSession = appData.workingSession ?? 0;
+
+  const currentWorkProgress =
+    mode === "work" && sessionStartAt
+      ? Math.floor((now - sessionStartAt) / 1000)
+      : 0;
+
+  const workingSession = savedWorkingSession + currentWorkProgress;
+
   const display = {
     hours: Math.floor(workingSession / 3600),
     minutes: Math.floor((workingSession % 3600) / 60)
   }
 
+  const saveCurrentWorkProgress = useCallback((currentMode) => {
+    if (!["work", "break"].includes(currentMode) || !sessionStartAt) return;
+
+    const elapsedSeconds = Math.floor(
+      (Date.now() - sessionStartAt) / 1000
+    );
+
+    setAppData(prev => {
+      if (currentMode === "work") {
+        return {
+          ...prev,
+          workingSession: (prev.workingSession ?? 0) + elapsedSeconds
+        };
+      }
+
+      return {
+        ...prev,
+        breakSession: (prev.breakSession ?? 0) + elapsedSeconds
+      };
+    });
+
+    setSessionStartAt(null);
+  }, [sessionStartAt]);
+
   const handleSessionEnd = useCallback(() => {
     if (hasEndedRef.current) return;
     hasEndedRef.current = true;
 
-    const elapsedSeconds = Math.floor(
-      (Date.now() - sessionStartRef.current) / 1000
-    );
-
-    setAppData(prev => ({
-      ...prev,
-      workingSession: (prev.workingSession ?? 0) + elapsedSeconds
-    }));
     setMode(prevMode => {
       if (prevMode === "idle") return prevMode;
 
       if (prevMode === "work") {
+        saveCurrentWorkProgress("work");
         setLastSession("work");
       } else if (prevMode === "break") {
+        saveCurrentWorkProgress("break");
         setLastSession("break");
       }
 
       return "idle";
     });
-  }, []);
+  }, [saveCurrentWorkProgress]);
+
   const handlePlay = () => {
     if (mode === "paused") {
+      setSessionStartAt(Date.now());
       setMode("work");
       return;
     }
-    sessionStartRef.current = Date.now();
 
+    setSessionStartAt(Date.now());
     setMode("work");
     setTime(timer);
   }
   const handlePause = () => {
+    saveCurrentWorkProgress(mode);
     setMode("paused")
   }
   const handleReset = () => {
+    saveCurrentWorkProgress(mode);
     setTime(timer);
     setMode("idle")
   }
   const handleBreak = () => {
-    sessionStartRef.current = Date.now();
+    setSessionStartAt(Date.now());
 
     setMode("break")
     setTime(breakTimer);
