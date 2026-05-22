@@ -9,6 +9,7 @@ import TimeUp from './components/TimeUp';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Sessions from './components/Sessions';
 
+import TaskBoard from "./components/task-board/TaskBoard";
 import { loadFocusData, saveFocusData } from "./utils/storage";
 
 
@@ -84,6 +85,44 @@ function App() {
     setTime(breakTimer);
   }
 
+  // Task handlers
+  const handleAddTask = (text) => {
+    const newTask = {
+      id: Date.now(),
+      text,
+      checked: false
+    }
+    setAppData(prev => ({
+      ...prev,
+      tasks: [...(prev.tasks || []), newTask]
+    }))
+  }
+
+  const handleToggleTask = (id) => {
+    setAppData(prev => ({
+      ...prev,
+      tasks: (prev.tasks || []).map(t =>
+        t.id === id ? { ...t, checked: !t.checked } : t
+      )
+    }))
+  }
+
+  const handleEditTask = (id, text) => {
+    setAppData(prev => ({
+      ...prev,
+      tasks: (prev.tasks || []).map(t =>
+        t.id === id ? { ...t, text } : t
+      )
+    }))
+  }
+
+  const handleDeleteTask = (id) => {
+    setAppData(prev => ({
+      ...prev,
+      tasks: (prev.tasks || []).filter(t => t.id !== id)
+    }))
+  }
+
   // Reset the session end flag when mode changes
   useEffect(() => {
     hasEndedRef.current = false;
@@ -131,9 +170,16 @@ function App() {
             <ResetBtn onReset={handleReset} />
           </div>
         </div>
-        <div className="absolute top-0 right-0">
+        <div className="absolute top-0 right-0 flex flex-col items-end gap-2">
           <Sessions
             display={display} />
+          <TaskBoard
+            tasks={appData.tasks || []}
+            onAddTask={handleAddTask}
+            onToggleTask={handleToggleTask}
+            onEditTask={handleEditTask}
+            onDeleteTask={handleDeleteTask}
+          />
         </div>
         {mode === "idle" && time === 0 && (
           <div className="absolute inset-0 pt-8">
