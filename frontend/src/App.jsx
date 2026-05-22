@@ -9,6 +9,9 @@ import TimeUp from './components/TimeUp';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Sessions from './components/Sessions';
 
+import { loadFocusData, saveFocusData } from "./utils/storage";
+
+
 function App() {
   let timer = 1500;  //variable for working session
   let breakTimer = 300; //variable for break session
@@ -16,7 +19,16 @@ function App() {
   const [mode, setMode] = useState("idle");
   const [lastSession, setLastSession] = useState(null);
 
-  const [workingSession, setWorkingSession] = useState(0);
+  //local Storage
+  const [appData, setAppData] = useState(() => loadFocusData());
+  
+  useEffect(() => {
+    saveFocusData(appData);
+  }, [appData]);
+
+
+  const workingSession = appData.workingSession ?? 0;
+
   const sessionStartRef = useRef(null);
   const hasEndedRef = useRef(false);
   const display = {
@@ -32,8 +44,10 @@ function App() {
       (Date.now() - sessionStartRef.current) / 1000
     );
 
-    setWorkingSession(prev => prev + elapsedSeconds);
-
+    setAppData(prev => ({
+      ...prev,
+      workingSession: (prev.workingSession ?? 0) + elapsedSeconds
+    }));
     setMode(prevMode => {
       if (prevMode === "idle") return prevMode;
 
@@ -101,7 +115,7 @@ function App() {
   return (
     <>
       <div className="relative">
-        <PondScene mode = {mode} />
+        <PondScene mode={mode} />
         <div className="absolute top-0 m-10 z-100 ">
           <MusicBtn />
         </div>
