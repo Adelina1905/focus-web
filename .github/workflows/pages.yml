@@ -41,7 +41,7 @@ jobs:
           node-version: 22.22
       - run: npm ci
       - name: Build
-        run: npm run build && ls
+        run: npm run build -- --base=${{ steps.pages.outputs.base_path }}/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
