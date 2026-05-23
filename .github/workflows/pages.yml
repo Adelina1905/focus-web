@@ -41,12 +41,11 @@ jobs:
           node-version: 22.22
       - run: npm ci
       - name: Build
-        run: npm run build
+        run: npm run build && ls
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: "./dist"
+          path: "./frontend/dist"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
