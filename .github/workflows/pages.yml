@@ -23,14 +23,11 @@ concurrency:
 
 jobs:
   # Single deploy job since we're just deploying
-  build:
+  Build:
     defaults:
       run:
         working-directory: ./frontend
 
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -50,15 +47,12 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: "./frontend/dist"
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
 
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
+    needs: Build
     runs-on: ubuntu-latest
     name: Deploy
     steps:
