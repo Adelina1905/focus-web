@@ -22,7 +22,9 @@ function App() {
 
   //local Storage
   const [appData, setAppData] = useState(() => loadFocusData());
-  
+
+  const endTimeRef = useRef(null);
+
   useEffect(() => {
     saveFocusData(appData);
   }, [appData]);
@@ -134,20 +136,27 @@ function App() {
 
   // Countdown timer effect
   useEffect(() => {
+    endTimeRef.current = Date.now() + time * 1000;
+
     if (mode === "idle" || mode === "paused") return;
 
     const interval = setInterval(() => {
-      setTime(prev => {
-        if (prev <= 1) {
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000)
+      const remaining = Math.max(
+        Math.ceil((endTimeRef.current - Date.now()) / 1000),
+        0
+      );
+
+      setTime(remaining);
+
+    if (remaining <= 0) {
+      clearInterval(interval);
+    }
+
+    }, 250)
 
     return () => clearInterval(interval);
 
-  }, [mode])
+  }, [mode, time])
 
   // Handle session end when time reaches 0
   useEffect(() => {
