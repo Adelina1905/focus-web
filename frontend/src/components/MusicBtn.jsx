@@ -25,7 +25,7 @@ export default function MusicBtn() {
   return (
     <>
       <audio ref={audioRef} loop>
-        <source src="/music/test.mp3" type="audio/mpeg" />
+        <source src={`${import.meta.env.BASE_URL}music/test.mp3`} type="audio/mpeg" />
       </audio>
       <button
         type="button"
